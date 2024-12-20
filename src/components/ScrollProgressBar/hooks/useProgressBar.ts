@@ -10,38 +10,15 @@ export const useProgressBar = ({
   isProgressComplete,
   onProgressUpdate,
 }: UseProgressBarProps) => {
-  const [progress, setProgress] = useState(direction === 'backward' ? 100 : 0);
-  const pathRef = useRef<SVGPathElement | null>(null);
+  const [progress, setProgress] = useState(0);
   const [pathLength, setPathLength] = useState(0);
   const [dotPoints, setDotPoints] = useState<DotPoint[]>([]);
-  const progressRef = useRef(direction === 'backward' ? 100 : 0);
+  const [isInitialized, setIsInitialized] = useState(false);
+
+  const pathRef = useRef<SVGPathElement | null>(null);
+  const progressRef = useRef(0);
   const scrollTimeoutRef = useRef<NodeJS.Timeout>();
   const hasCompletedRef = useRef(false);
-
-  useEffect(() => {
-    if (!pathRef.current) return;
-
-    const length = pathRef.current.getTotalLength();
-    setPathLength(length);
-
-    const points = DOT_POSITIONS.map((percent) => {
-      const point = pathRef.current!.getPointAtLength((length * percent) / 100);
-      return { x: point.x, y: point.y, percentage: percent };
-    });
-
-    setDotPoints(points);
-  }, []);
-
-  useEffect(() => {
-    if (direction === 'backward') {
-      setProgress(100);
-      progressRef.current = 100;
-    } else if (!isProgressComplete) {
-      setProgress(0);
-      progressRef.current = 0;
-    }
-    hasCompletedRef.current = false;
-  }, [direction, isProgressComplete]);
 
   const updateProgress = useCallback(
     (newProgress: number) => {
@@ -94,6 +71,43 @@ export const useProgressBar = ({
     },
     [direction, isProgressComplete, updateProgress, onProgressComplete, onProgressStart]
   );
+
+  // Initialize SVG path and dots
+  useEffect(() => {
+    if (!pathRef.current) return;
+
+    const length = pathRef.current.getTotalLength();
+    setPathLength(length);
+
+    const points = DOT_POSITIONS.map((percent) => {
+      const point = pathRef.current!.getPointAtLength((length * percent) / 100);
+      return { x: point.x, y: point.y, percentage: percent };
+    });
+
+    setDotPoints(points);
+  }, []);
+
+  // Handle initial progress state
+  useEffect(() => {
+    if (isInitialized) return;
+    
+    const initialValue = direction === 'backward' ? 100 : 0;
+    updateProgress(initialValue);
+    setIsInitialized(true);
+  }, [direction, updateProgress, isInitialized]);
+
+  // Reset progress only when direction changes and progress is complete
+  useEffect(() => {
+    if (!isInitialized) return;
+    
+    if (isProgressComplete && direction === 'backward') {
+      updateProgress(100);
+      hasCompletedRef.current = false;
+    } else if (!isProgressComplete && direction === 'forward') {
+      updateProgress(0);
+      hasCompletedRef.current = false;
+    }
+  }, [direction, isProgressComplete, updateProgress, isInitialized]);
 
   return {
     progress,

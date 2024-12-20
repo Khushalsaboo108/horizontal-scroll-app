@@ -26,30 +26,29 @@
   font-size: 14px;
   opacity: 0;
   position: absolute;
-  border: 3px solid rgb(210, 6, 6);
+  /* border: 3px solid rgb(210, 6, 6); */
 }
 
 .label-top-hover {
-  transition: all 1s ease; /* Apply the transition directly to the element */
+  transition: all 1s ease;
   top: -24px;
 }
 
-.label-bottom-hover{
-  transition: all 1s ease; /* Apply the transition directly to the element */
+.label-bottom-hover {
+  transition: all 1s ease;
   bottom: -24px;
 }
 
 .foreign-style:hover .label-top-hover {
   background-color: blue;
-  transform: scale(2,2); /* Doubles the size of the element */
+  transform: scale(2, 2);
   top: -50px;
 }
 
 .foreign-style:hover .label-bottom-hover {
   background-color: red;
-  transform: scale(2,2);
+  transform: scale(2, 2);
   bottom: -50px;
-  translate: 2s;
 }
 
 .label-top {
@@ -65,7 +64,6 @@
     opacity: 0;
     transform: translateY(-100px) scale(0);
   }
-
   100% {
     opacity: 1;
     transform: translateY(0) scale(1);
@@ -77,14 +75,12 @@
     opacity: 0;
     transform: translateY(100px) scale(0);
   }
-
   100% {
     opacity: 1;
     transform: translateY(0) scale(1);
   }
 }
 
-/* Reverse animations for when elements disappear */
 .label-top.removing {
   animation: fadeOutTop 0.3s ease-in forwards;
 }
@@ -98,7 +94,6 @@
     opacity: 1;
     transform: translateY(0) scale(1);
   }
-
   100% {
     opacity: 0;
     transform: translateY(-100px) scale(0);
@@ -110,9 +105,8 @@
     opacity: 1;
     transform: translateY(0) scale(1);
   }
-
   100% {
     opacity: 0;
-    transform: translateY(-100px) scale(0);
+    transform: translateY(100px) scale(0);
   }
 }
