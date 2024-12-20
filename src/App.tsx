@@ -4,6 +4,7 @@ import Page2 from "./page/Page2";
 import Page3 from "./page/Page3";
 import "./App.css";
 import Header from "./components/common/Header";
+import Loader from "./components/common/Loading";
 
 const App: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -94,7 +95,8 @@ const App: React.FC = () => {
 
   return (
     <>
-        <Header />
+      <Loader />
+      <Header />
       <div
         ref={containerRef}
         onWheel={handleWheel}
