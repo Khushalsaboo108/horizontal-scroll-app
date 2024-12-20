@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import './Loader.css';
+import '../commonStyle/Loading.css';
 
 const Loader = () => {
   const [isVisible, setIsVisible] = useState(true);
@@ -7,7 +7,7 @@ const Loader = () => {
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsVisible(false);
-    }, 3000);
+    }, 1500);
 
     return () => clearTimeout(timer);
   }, []);

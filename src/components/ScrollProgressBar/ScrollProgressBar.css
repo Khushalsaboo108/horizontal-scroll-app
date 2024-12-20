@@ -26,7 +26,7 @@
   font-size: 14px;
   opacity: 0;
   position: absolute;
-  /* border: 3px solid rgb(210, 6, 6); */
+  cursor: pointer;
 }
 
 .label-top-hover {

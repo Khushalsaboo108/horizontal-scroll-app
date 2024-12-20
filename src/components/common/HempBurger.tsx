@@ -15,10 +15,10 @@ const HamburgerMenu = () => {
       {isOpen && (
         <ul className="dropdown-menu">
           <li>
-            <button className="dropdown-item" onClick={() => alert('Action clicked!')}>About us</button>
+            <button className="dropdown-item">About us</button>
           </li>
           <li>
-            <button className="dropdown-item" onClick={() => alert('Another action clicked!')}>Contact us</button>
+            <button className="dropdown-item">Contact us</button>
           </li>
           {/* <li>
             <button className="dropdown-item" onClick={() => alert('Something else clicked!')}>Know more about</button>
