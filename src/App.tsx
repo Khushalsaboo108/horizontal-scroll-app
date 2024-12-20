@@ -1,15 +1,16 @@
-import React, { useRef, useState, useCallback } from 'react';
-import Page1 from './page/Page1';
-import Page2 from './page/Page2';
-import Page3 from './page/Page3';
-import './App.css';
+import React, { useRef, useState, useCallback } from "react";
+import Page1 from "./page/Page1";
+import Page2 from "./page/Page2";
+import Page3 from "./page/Page3";
+import "./App.css";
+import Header from "./components/common/Header";
 
 const App: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [currentPage, setCurrentPage] = useState(0);
   const [scrollDirection, setScrollDirection] = useState<
-    'forward' | 'backward'
-  >('forward');
+    "forward" | "backward"
+  >("forward");
   const [isProgressComplete, setIsProgressComplete] = useState(false);
   const [progressValue, setProgressValue] = useState(0);
   const isScrollingRef = useRef(false);
@@ -22,11 +23,11 @@ const App: React.FC = () => {
       const pageWidth = window.innerWidth;
       containerRef.current.scrollTo({
         left: targetPage * pageWidth,
-        behavior: 'smooth',
+        behavior: "smooth",
       });
 
       setCurrentPage(targetPage);
-      setScrollDirection(targetPage > currentPage ? 'forward' : 'backward');
+      setScrollDirection(targetPage > currentPage ? "forward" : "backward");
 
       // Reset scrolling lock after animation
       setTimeout(() => {
@@ -69,7 +70,7 @@ const App: React.FC = () => {
     const newPage = Math.round(currentScroll / pageWidth);
 
     if (newPage !== currentPage) {
-      setScrollDirection(newPage > currentPage ? 'forward' : 'backward');
+      setScrollDirection(newPage > currentPage ? "forward" : "backward");
       setCurrentPage(newPage);
 
       if (newPage === 1 && currentPage === 0) {
@@ -92,28 +93,31 @@ const App: React.FC = () => {
   }, []);
 
   return (
-    <div
-      ref={containerRef}
-      onWheel={handleWheel}
-      onScroll={handleScroll}
-      className="containerStyle"
-    >
-      <div className="pageStyle">
-        <Page1 />
+    <>
+        <Header />
+      <div
+        ref={containerRef}
+        onWheel={handleWheel}
+        onScroll={handleScroll}
+        className="containerStyle"
+      >
+        <div className="pageStyle">
+          <Page1 />
+        </div>
+        <div className="pageStyle">
+          <Page2
+            onForwardComplete={handleForwardComplete}
+            onBackwardComplete={handleBackwardComplete}
+            scrollDirection={scrollDirection}
+            isProgressComplete={isProgressComplete}
+            onProgressUpdate={handleProgressUpdate}
+          />
+        </div>
+        <div className="pageStyle">
+          <Page3 />
+        </div>
       </div>
-      <div className="pageStyle">
-        <Page2
-          onForwardComplete={handleForwardComplete}
-          onBackwardComplete={handleBackwardComplete}
-          scrollDirection={scrollDirection}
-          isProgressComplete={isProgressComplete}
-          onProgressUpdate={handleProgressUpdate}
-        />
-      </div>
-      <div className="pageStyle">
-        <Page3 />
-      </div>
-    </div>
+    </>
   );
 };
 

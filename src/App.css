@@ -9,3 +9,62 @@
   flex: 0 0 100vw;
   scroll-snap-align: start;
 }
+
+.header-point{
+  position: sticky;
+  padding: 10px;
+  background: rgb(183, 183, 183);
+  font-weight: bolder;
+  font-size: 25px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* HamburgerMenu.css */
+.dropdown-container {
+  position: relative;
+  display: inline-block;
+}
+
+.hamburger-btn {
+  font-size: 24px;
+  background-color: #f8f9fa;
+  border: none;
+  cursor: pointer;
+  padding: 10px 15px;
+  border-radius: 5px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.hamburger-btn:hover {
+  background-color: #e2e6ea;
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background-color: white;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border-radius: 5px;
+  padding: 0;
+  list-style: none;
+  margin: 10px 0 0 0;
+  z-index: 1000;
+  width: 200px;
+}
+
+.dropdown-item {
+  padding: 10px 20px;
+  border: none;
+  width: 100%;
+  text-align: left;
+  background: none;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.dropdown-item:hover {
+  background-color: #f1f1f1;
+}
