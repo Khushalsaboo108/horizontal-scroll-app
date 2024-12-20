@@ -1,0 +1,11 @@
+.containerStyle {
+  display: flex;
+  overflow: hidden;
+  height: 100vh;
+  scroll-snap-type: x mandatory;
+}
+
+.pageStyle {
+  flex: 0 0 100vw;
+  scroll-snap-align: start;
+}

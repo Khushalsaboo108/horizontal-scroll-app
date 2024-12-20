@@ -1,0 +1,15 @@
+export const DOT_POSITIONS = [3, 18, 37, 53, 75, 90, 100];
+
+export const SCROLL_SETTINGS = {
+  STEP: 2.5, // Reduced from 3 for smoother touchpad scrolling
+  TIMEOUT: 800, // Increased from 100 to reduce sensitivity
+  DELTA_MULTIPLIER: 10, // New constant to normalize touchpad delta
+};
+
+export const SVG_SETTINGS = {
+  WIDTH: '90%',
+  HEIGHT: '100%',
+  OVERFLOW: 'visible',
+  VIEW_BOX: '0 0 1389 146',
+  PATH: 'M0.5 96.5C40 -3 152 157.5 180 48.5C205.193 -49.573 257 133 328.5 96.5C400 60 390 182.5 525.5 125.5C661 68.5 545.5 -30.5001 669.5 21.9999C793.5 74.4999 920.5 130 831.5 144.5C742.5 159 863 -30.5001 940.5 21.9999C1018 74.4999 965 182.5 1061.5 125.5C1158 68.5 1125.5 -58.5 1187 33.5C1248.5 125.5 1350.5 1 1299.5 83C1258.7 148.6 1341.5 138.667 1388 125.5',
+};
