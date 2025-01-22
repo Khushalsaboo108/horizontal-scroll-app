@@ -13,6 +13,8 @@ const App: React.FC = () => {
   const [progressValue, setProgressValue] = useState(0);
   const isScrollingRef = useRef(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  const touchStartX = useRef(0);
+  const touchEndX = useRef(0);
 
   useEffect(() => {
     const handleResize = () => {
@@ -43,6 +45,30 @@ const App: React.FC = () => {
     },
     [currentPage]
   );
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+    touchEndX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    touchEndX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchEnd = () => {
+    const swipeDistance = touchStartX.current - touchEndX.current;
+    const minSwipeDistance = 50; // Minimum distance for swipe to register
+
+    if (Math.abs(swipeDistance) > minSwipeDistance) {
+      if (swipeDistance > 0 && currentPage < 2) {
+        // Swipe left
+        handleNavigate(currentPage + 1);
+      } else if (swipeDistance < 0 && currentPage > 0) {
+        // Swipe right
+        handleNavigate(currentPage - 1);
+      }
+    }
+  };
 
   const handleWheel = useCallback(
     (e: React.WheelEvent) => {
@@ -111,6 +137,9 @@ const App: React.FC = () => {
         ref={containerRef}
         onWheel={handleWheel}
         onScroll={handleScroll}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
         className="containerStyle"
       >
         <div className="pageStyle">
