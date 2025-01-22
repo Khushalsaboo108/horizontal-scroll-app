@@ -3,6 +3,7 @@
   overflow: hidden;
   height: 100vh;
   scroll-snap-type: x mandatory;
+  touch-action: pan-x; /* Enable horizontal touch scrolling */
 }
 
 .pageStyle {
@@ -10,7 +11,7 @@
   scroll-snap-align: start;
 }
 
-.header-point{
+.header-point {
   position: sticky;
   padding: 10px;
   background: rgb(183, 183, 183);
@@ -67,4 +68,11 @@
 
 .dropdown-item:hover {
   background-color: #f1f1f1;
+}
+
+/* Hide ScrollProgressBar on mobile */
+@media (max-width: 768px) {
+  .progress-bar-container {
+    display: none;
+  }
 }

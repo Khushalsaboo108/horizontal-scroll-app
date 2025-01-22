@@ -1,9 +1,9 @@
 import React from 'react';
-import PageContainer from '../components/PageContainer/PageContainer';
 import { colors } from '../styles/theme';
 import { contentStyle } from '../styles/common';
 import ScrollProgressBar from '../components/ScrollProgressBar';
 import './PageStyle.css';
+import PageContainer from '../components/PageContainer/PageContainer';
 
 interface Page2Props {
   onForwardComplete: () => void;
@@ -24,13 +24,7 @@ const Page2: React.FC<Page2Props> = ({
     <div className="container">
       <div style={contentStyle}>
         <h1 className="heading">Page 2</h1>
-        <p className="text">
-          {scrollDirection === 'backward'
-            ? 'Scroll up to go back to the previous page'
-            : isProgressComplete
-            ? 'Scroll to navigate to the next page'
-            : 'Complete all steps to continue'}
-        </p>
+        <p className="text">Swipe or scroll to navigate between pages</p>
       </div>
       <ScrollProgressBar
         onProgressComplete={onForwardComplete}
