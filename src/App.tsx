@@ -1,20 +1,27 @@
-import React, { useRef, useState, useCallback } from "react";
-import Page1 from "./page/Page1";
-import Page2 from "./page/Page2";
-import Page3 from "./page/Page3";
-import "./App.css";
-import Header from "./components/common/Header";
-import Loader from "./components/common/Loading";
+import React, { useRef, useState, useCallback, useEffect } from 'react';
+import Page1 from './page/Page1';
+import Page2 from './page/Page2';
+import Page3 from './page/Page3';
+import './App.css';
+import Loader from './components/common/Loading';
 
 const App: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [currentPage, setCurrentPage] = useState(0);
-  const [scrollDirection, setScrollDirection] = useState<
-    "forward" | "backward"
-  >("forward");
+  const [scrollDirection, setScrollDirection] = useState<'forward' | 'backward'>('forward');
   const [isProgressComplete, setIsProgressComplete] = useState(false);
   const [progressValue, setProgressValue] = useState(0);
   const isScrollingRef = useRef(false);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const handleNavigate = useCallback(
     (targetPage: number) => {
@@ -24,13 +31,12 @@ const App: React.FC = () => {
       const pageWidth = window.innerWidth;
       containerRef.current.scrollTo({
         left: targetPage * pageWidth,
-        behavior: "smooth",
+        behavior: 'smooth',
       });
 
       setCurrentPage(targetPage);
-      setScrollDirection(targetPage > currentPage ? "forward" : "backward");
+      setScrollDirection(targetPage > currentPage ? 'forward' : 'backward');
 
-      // Reset scrolling lock after animation
       setTimeout(() => {
         isScrollingRef.current = false;
       }, 500);
@@ -40,7 +46,7 @@ const App: React.FC = () => {
 
   const handleWheel = useCallback(
     (e: React.WheelEvent) => {
-      if (isScrollingRef.current) return;
+      if (isScrollingRef.current || isMobile) return;
 
       if (currentPage === 1) {
         if (e.deltaY < 0 && progressValue === 0) {
@@ -60,7 +66,7 @@ const App: React.FC = () => {
         handleNavigate(targetPage);
       }
     },
-    [currentPage, progressValue, handleNavigate]
+    [currentPage, progressValue, handleNavigate, isMobile]
   );
 
   const handleScroll = useCallback(() => {
@@ -71,15 +77,20 @@ const App: React.FC = () => {
     const newPage = Math.round(currentScroll / pageWidth);
 
     if (newPage !== currentPage) {
-      setScrollDirection(newPage > currentPage ? "forward" : "backward");
+      setScrollDirection(newPage > currentPage ? 'forward' : 'backward');
       setCurrentPage(newPage);
 
       if (newPage === 1 && currentPage === 0) {
-        setProgressValue(0);
-        setIsProgressComplete(false);
+        if (!isMobile) {
+          setProgressValue(0);
+          setIsProgressComplete(false);
+        } else {
+          setProgressValue(100);
+          setIsProgressComplete(true);
+        }
       }
     }
-  }, [currentPage]);
+  }, [currentPage, isMobile]);
 
   const handleProgressUpdate = useCallback((value: number) => {
     setProgressValue(value);
@@ -96,7 +107,6 @@ const App: React.FC = () => {
   return (
     <>
       <Loader />
-      <Header />
       <div
         ref={containerRef}
         onWheel={handleWheel}
