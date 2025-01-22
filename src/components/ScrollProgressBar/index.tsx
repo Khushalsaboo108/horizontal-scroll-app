@@ -7,10 +7,12 @@ import { SVG_SETTINGS } from './constants';
 import './ScrollProgressBar.css';
 
 const ScrollProgressBar: React.FC<ScrollProgressBarProps> = (props) => {
-  const { progress, pathRef, pathLength, dotPoints, handleWheel } =
+  const { progress, pathRef, pathLength, dotPoints, handleWheel, isMobile } =
     useProgressBar(props);
 
   useEffect(() => {
+    if (isMobile) return; // Don't add event listener on mobile
+
     const wheelHandler = (e: WheelEvent) => {
       handleWheel(e);
     };
@@ -19,7 +21,9 @@ const ScrollProgressBar: React.FC<ScrollProgressBarProps> = (props) => {
     return () => {
       window.removeEventListener('wheel', wheelHandler);
     };
-  }, [props.direction, props.isProgressComplete, handleWheel]);
+  }, [props.direction, props.isProgressComplete, handleWheel, isMobile]);
+
+  if (isMobile) return null; // Don't render on mobile
 
   return (
     <div className="progress-bar-container">
