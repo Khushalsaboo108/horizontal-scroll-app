@@ -1,21 +1,20 @@
-import React, { useRef, useState, useCallback, useEffect } from 'react';
-import Page1 from './page/Page1';
-import Page2 from './page/Page2';
-import Page3 from './page/Page3';
-import './App.css';
-import Header from './components/common/Header';
-import Loader from './components/common/Loading';
+import React, { useRef, useState, useCallback } from "react";
+import Page1 from "./page/Page1";
+import Page2 from "./page/Page2";
+import Page3 from "./page/Page3";
+import "./App.css";
+import Header from "./components/common/Header";
+import Loader from "./components/common/Loading";
 
 const App: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [currentPage, setCurrentPage] = useState(0);
   const [scrollDirection, setScrollDirection] = useState<
-    'forward' | 'backward'
-  >('forward');
-  const [isProgressComplete] = useState(true); // Always set to true to disable progress checks
-  const [progressValue] = useState(100); // Always set to 100 to disable progress checks
+    "forward" | "backward"
+  >("forward");
+  const [isProgressComplete, setIsProgressComplete] = useState(false);
+  const [progressValue, setProgressValue] = useState(0);
   const isScrollingRef = useRef(false);
-  const touchStartX = useRef(0);
 
   const handleNavigate = useCallback(
     (targetPage: number) => {
@@ -25,12 +24,13 @@ const App: React.FC = () => {
       const pageWidth = window.innerWidth;
       containerRef.current.scrollTo({
         left: targetPage * pageWidth,
-        behavior: 'smooth',
+        behavior: "smooth",
       });
 
       setCurrentPage(targetPage);
-      setScrollDirection(targetPage > currentPage ? 'forward' : 'backward');
+      setScrollDirection(targetPage > currentPage ? "forward" : "backward");
 
+      // Reset scrolling lock after animation
       setTimeout(() => {
         isScrollingRef.current = false;
       }, 500);
@@ -42,48 +42,26 @@ const App: React.FC = () => {
     (e: React.WheelEvent) => {
       if (isScrollingRef.current) return;
 
+      if (currentPage === 1) {
+        if (e.deltaY < 0 && progressValue === 0) {
+          handleNavigate(0);
+        } else if (e.deltaY > 0 && progressValue === 100) {
+          handleNavigate(2);
+        }
+        return;
+      }
+
       const targetPage = currentPage + (e.deltaY > 0 ? 1 : -1);
       if (targetPage >= 0 && targetPage <= 2) {
+        if (currentPage === 2 && targetPage === 1) {
+          setProgressValue(100);
+          setIsProgressComplete(true);
+        }
         handleNavigate(targetPage);
       }
     },
-    [currentPage, handleNavigate]
+    [currentPage, progressValue, handleNavigate]
   );
-
-  const handleTouchStart = (e: TouchEvent) => {
-    touchStartX.current = e.touches[0].clientX;
-  };
-
-  const handleTouchMove = (e: TouchEvent) => {
-    if (!containerRef.current) return;
-    
-    const touchEndX = e.touches[0].clientX;
-    const diff = touchStartX.current - touchEndX;
-    
-    if (Math.abs(diff) > 50) {
-      const direction = diff > 0 ? 1 : -1;
-      const targetPage = currentPage + direction;
-      
-      if (targetPage >= 0 && targetPage <= 2) {
-        handleNavigate(targetPage);
-      }
-      
-      touchStartX.current = touchEndX;
-    }
-  };
-
-  useEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
-
-    container.addEventListener('touchstart', handleTouchStart);
-    container.addEventListener('touchmove', handleTouchMove);
-
-    return () => {
-      container.removeEventListener('touchstart', handleTouchStart);
-      container.removeEventListener('touchmove', handleTouchMove);
-    };
-  }, [currentPage]);
 
   const handleScroll = useCallback(() => {
     if (!containerRef.current) return;
@@ -93,15 +71,27 @@ const App: React.FC = () => {
     const newPage = Math.round(currentScroll / pageWidth);
 
     if (newPage !== currentPage) {
-      setScrollDirection(newPage > currentPage ? 'forward' : 'backward');
+      setScrollDirection(newPage > currentPage ? "forward" : "backward");
       setCurrentPage(newPage);
+
+      if (newPage === 1 && currentPage === 0) {
+        setProgressValue(0);
+        setIsProgressComplete(false);
+      }
     }
   }, [currentPage]);
 
-  // Empty functions for progress handling
-  const handleProgressUpdate = useCallback(() => {}, []);
-  const handleForwardComplete = useCallback(() => {}, []);
-  const handleBackwardComplete = useCallback(() => {}, []);
+  const handleProgressUpdate = useCallback((value: number) => {
+    setProgressValue(value);
+  }, []);
+
+  const handleForwardComplete = useCallback(() => {
+    setIsProgressComplete(true);
+  }, []);
+
+  const handleBackwardComplete = useCallback(() => {
+    setIsProgressComplete(true);
+  }, []);
 
   return (
     <>

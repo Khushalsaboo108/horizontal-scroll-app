@@ -1,9 +1,9 @@
 import React from 'react';
+import PageContainer from '../components/PageContainer/PageContainer';
 import { colors } from '../styles/theme';
 import { contentStyle } from '../styles/common';
 import ScrollProgressBar from '../components/ScrollProgressBar';
 import './PageStyle.css';
-import PageContainer from '../components/PageContainer/PageContainer';
 
 interface Page2Props {
   onForwardComplete: () => void;
@@ -19,22 +19,37 @@ const Page2: React.FC<Page2Props> = ({
   scrollDirection,
   isProgressComplete,
   onProgressUpdate,
-}) => (
-  <PageContainer backgroundColor={colors.page.page2}>
-    <div className="container">
-      <div style={contentStyle}>
-        <h1 className="heading">Page 2</h1>
-        <p className="text">Swipe or scroll to navigate between pages</p>
+}) => {
+  const isMobile = window.innerWidth <= 768;
+
+  return (
+    <PageContainer backgroundColor={colors.page.page2}>
+      <div className="container">
+        <div style={contentStyle}>
+          <h1 className="heading">Page 2</h1>
+          <p className="text">
+            {isMobile 
+              ? 'Swipe to navigate between pages'
+              : scrollDirection === 'backward'
+                ? 'Scroll up to go back to the previous page'
+                : isProgressComplete
+                  ? 'Scroll to navigate to the next page'
+                  : 'Complete all steps to continue'
+            }
+          </p>
+        </div>
+        {!isMobile && (
+          <ScrollProgressBar
+            onProgressComplete={onForwardComplete}
+            onProgressStart={onBackwardComplete}
+            direction={scrollDirection}
+            isProgressComplete={isProgressComplete}
+            onProgressUpdate={onProgressUpdate}
+          />
+        )}
       </div>
-      <ScrollProgressBar
-        onProgressComplete={onForwardComplete}
-        onProgressStart={onBackwardComplete}
-        direction={scrollDirection}
-        isProgressComplete={isProgressComplete}
-        onProgressUpdate={onProgressUpdate}
-      />
-    </div>
-  </PageContainer>
-);
+    </PageContainer>
+  );
+};
 
 export default Page2;
