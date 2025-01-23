@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { ProgressDotProps } from '../types';
+// import { data } from '../../../data';
 import '../ScrollProgressBar.css';
+
 
 const ProgressDot: React.FC<ProgressDotProps> = ({
   point,
@@ -55,4 +57,4 @@ const ProgressDot: React.FC<ProgressDotProps> = ({
   );
 };
 
-export default React.memo(ProgressDot);
+export default ProgressDot;

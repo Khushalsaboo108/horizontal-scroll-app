@@ -1,9 +1,13 @@
-export const DOT_POSITIONS = [3, 18, 37, 53, 75, 90, 100];
+import { data } from "../../data";
+
+export const DOT_POSITIONS = data.map((_, index) => {
+  return Math.round((index / (data.length - 1)) * 100);
+});
 
 export const SCROLL_SETTINGS = {
-  STEP: 2.5, // Reduced from 3 for smoother touchpad scrolling
-  TIMEOUT: 800, // Increased from 100 to reduce sensitivity
-  DELTA_MULTIPLIER: 10, // New constant to normalize touchpad delta
+  STEP: 2.5,
+  TIMEOUT: 800,
+  DELTA_MULTIPLIER: 10,
 };
 
 export const SVG_SETTINGS = {
