@@ -9,25 +9,29 @@ import Loader from './components/common/Loading';
 const App: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [currentPage, setCurrentPage] = useState(0);
-  const [scrollDirection, setScrollDirection] = useState<
-    'forward' | 'backward'
-  >('forward');
+  const [scrollDirection, setScrollDirection] = useState<'forward' | 'backward'>('forward');
   const [isProgressComplete, setIsProgressComplete] = useState(false);
   const [progressValue, setProgressValue] = useState(0);
   const isScrollingRef = useRef(false);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const touchStartX = useRef(0);
-  const isMobile = window.innerWidth <= 768;
+  const touchStartY = useRef(0);
+  const previousPage = useRef(0);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const handleNavigate = useCallback(
     (targetPage: number) => {
       if (!containerRef.current || isScrollingRef.current) return;
 
-      // Prevent navigation if on page 2 and progress conditions aren't met
-      if (!isMobile && currentPage === 1) {
-        if (targetPage < currentPage && progressValue > 0) return;
-        if (targetPage > currentPage && progressValue < 100) return;
-      }
-
+      previousPage.current = currentPage;
       isScrollingRef.current = true;
       const pageWidth = window.innerWidth;
       containerRef.current.scrollTo({
@@ -38,21 +42,70 @@ const App: React.FC = () => {
       setCurrentPage(targetPage);
       setScrollDirection(targetPage > currentPage ? 'forward' : 'backward');
 
+      // Set initial progress value when navigating to page 2
+      if (targetPage === 1) {
+        if (previousPage.current === 2) {
+          setProgressValue(100);
+          setIsProgressComplete(true);
+        } else if (previousPage.current === 0) {
+          setProgressValue(0);
+          setIsProgressComplete(false);
+        }
+      }
+
       setTimeout(() => {
         isScrollingRef.current = false;
       }, 500);
     },
-    [currentPage, progressValue, isMobile]
+    [currentPage]
   );
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+    touchStartY.current = e.touches[0].clientY;
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!isMobile) return;
+    
+    const touchX = e.touches[0].clientX;
+    const touchY = e.touches[0].clientY;
+    
+    const deltaX = touchStartX.current - touchX;
+    const deltaY = touchStartY.current - touchY;
+    
+    if (Math.abs(deltaX) > Math.abs(deltaY)) {
+      e.preventDefault();
+    }
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (!isMobile) return;
+
+    const touchEndX = e.changedTouches[0].clientX;
+    const swipeDistance = touchStartX.current - touchEndX;
+    const minSwipeDistance = 50;
+
+    if (Math.abs(swipeDistance) > minSwipeDistance) {
+      if (swipeDistance > 0 && currentPage < 2) {
+        handleNavigate(currentPage + 1);
+      } else if (swipeDistance < 0 && currentPage > 0) {
+        handleNavigate(currentPage - 1);
+      }
+    }
+  };
 
   const handleWheel = useCallback(
     (e: React.WheelEvent) => {
-      if (isScrollingRef.current) return;
+      if (isScrollingRef.current || isMobile) return;
 
-      // For desktop, handle page 2 navigation based on progress
-      if (!isMobile && currentPage === 1) {
-        if (e.deltaY < 0 && progressValue > 0) return; // Prevent scrolling back if progress > 0
-        if (e.deltaY > 0 && progressValue < 100) return; // Prevent scrolling forward if progress < 100
+      if (currentPage === 1) {
+        if (e.deltaY < 0 && progressValue === 0) {
+          handleNavigate(0);
+        } else if (e.deltaY > 0 && progressValue === 100) {
+          handleNavigate(2);
+        }
+        return;
       }
 
       const targetPage = currentPage + (e.deltaY > 0 ? 1 : -1);
@@ -60,43 +113,8 @@ const App: React.FC = () => {
         handleNavigate(targetPage);
       }
     },
-    [currentPage, handleNavigate, isMobile, progressValue]
+    [currentPage, progressValue, handleNavigate, isMobile]
   );
-
-  const handleTouchStart = (e: TouchEvent) => {
-    touchStartX.current = e.touches[0].clientX;
-  };
-
-  const handleTouchMove = (e: TouchEvent) => {
-    if (!containerRef.current) return;
-    
-    const touchEndX = e.touches[0].clientX;
-    const diff = touchStartX.current - touchEndX;
-    
-    if (Math.abs(diff) > 50) {
-      const direction = diff > 0 ? 1 : -1;
-      const targetPage = currentPage + direction;
-      
-      if (targetPage >= 0 && targetPage <= 2) {
-        handleNavigate(targetPage);
-      }
-      
-      touchStartX.current = touchEndX;
-    }
-  };
-
-  useEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
-
-    container.addEventListener('touchstart', handleTouchStart);
-    container.addEventListener('touchmove', handleTouchMove);
-
-    return () => {
-      container.removeEventListener('touchstart', handleTouchStart);
-      container.removeEventListener('touchmove', handleTouchMove);
-    };
-  }, [currentPage]);
 
   const handleScroll = useCallback(() => {
     if (!containerRef.current) return;
@@ -106,8 +124,20 @@ const App: React.FC = () => {
     const newPage = Math.round(currentScroll / pageWidth);
 
     if (newPage !== currentPage) {
-      setScrollDirection(newPage > currentPage ? 'forward' : 'backward');
+      const newDirection = newPage > currentPage ? 'forward' : 'backward';
+      setScrollDirection(newDirection);
       setCurrentPage(newPage);
+
+      // Handle progress value when entering page 2
+      if (newPage === 1) {
+        if (currentPage === 2) {
+          setProgressValue(100);
+          setIsProgressComplete(true);
+        } else if (currentPage === 0) {
+          setProgressValue(0);
+          setIsProgressComplete(false);
+        }
+      }
     }
   }, [currentPage]);
 
@@ -131,6 +161,9 @@ const App: React.FC = () => {
         ref={containerRef}
         onWheel={handleWheel}
         onScroll={handleScroll}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
         className="containerStyle"
       >
         <div className="pageStyle">
