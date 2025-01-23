@@ -14,22 +14,11 @@ export const useProgressBar = ({
   const [pathLength, setPathLength] = useState(0);
   const [dotPoints, setDotPoints] = useState<DotPoint[]>([]);
   const [isInitialized, setIsInitialized] = useState(false);
-  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
   const pathRef = useRef<SVGPathElement | null>(null);
   const progressRef = useRef(0);
   const scrollTimeoutRef = useRef<NodeJS.Timeout>();
   const hasCompletedRef = useRef(false);
-
-  // Check for mobile screen size
-  useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth <= 768);
-    };
-
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
 
   const updateProgress = useCallback(
     (newProgress: number) => {
@@ -42,8 +31,6 @@ export const useProgressBar = ({
 
   const handleWheel = useCallback(
     (e: WheelEvent) => {
-      if (isMobile) return;
-
       e.preventDefault();
       e.stopPropagation();
 
@@ -82,7 +69,7 @@ export const useProgressBar = ({
         }
       }, SCROLL_SETTINGS.TIMEOUT);
     },
-    [direction, isProgressComplete, updateProgress, onProgressComplete, onProgressStart, isMobile]
+    [direction, isProgressComplete, updateProgress, onProgressComplete, onProgressStart]
   );
 
   // Initialize SVG path and dots
@@ -102,25 +89,25 @@ export const useProgressBar = ({
 
   // Handle initial progress state
   useEffect(() => {
-    if (isInitialized || isMobile) return;
+    if (isInitialized) return;
     
     const initialValue = direction === 'backward' ? 100 : 0;
     updateProgress(initialValue);
     setIsInitialized(true);
-  }, [direction, updateProgress, isInitialized, isMobile]);
+  }, [direction, updateProgress, isInitialized]);
 
   // Reset progress only when direction changes and progress is complete
   useEffect(() => {
-    if (!isInitialized || isMobile) return;
+    if (!isInitialized) return;
     
-    if (direction === 'backward') {
+    if (isProgressComplete && direction === 'backward') {
       updateProgress(100);
       hasCompletedRef.current = false;
-    } else if (direction === 'forward') {
+    } else if (!isProgressComplete && direction === 'forward') {
       updateProgress(0);
       hasCompletedRef.current = false;
     }
-  }, [direction, updateProgress, isInitialized, isMobile]);
+  }, [direction, isProgressComplete, updateProgress, isInitialized]);
 
   return {
     progress,
@@ -128,6 +115,5 @@ export const useProgressBar = ({
     pathLength,
     dotPoints,
     handleWheel,
-    isMobile,
   };
 };
