@@ -11,7 +11,7 @@ export const SCROLL_SETTINGS = {
 };
 
 export const SVG_SETTINGS = {
-  WIDTH: '90%',
+  WIDTH: '100%',
   HEIGHT: '100%',
   OVERFLOW: 'visible',
   VIEW_BOX: '0 0 1389 146',

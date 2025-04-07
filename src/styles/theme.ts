@@ -8,8 +8,8 @@ export const colors = {
   },
   page: {
     page1: '#f8f9fa',
-    page2: '#e9ecef',
-    page3: '#dee2e6',
+    page2: '#f8f9fa',
+    page3: '#f8f9fa',
   },
 };
 
