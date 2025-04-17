@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { UseProgressBarProps, DotPoint } from '../types';
-import { DOT_POSITIONS, SCROLL_SETTINGS } from '../constants';
+import { getDotPositions, SCROLL_SETTINGS } from '../constants';
 import { findClosestDot, calculateNewProgress } from '../utils';
 
 export const useProgressBar = ({
@@ -9,6 +9,7 @@ export const useProgressBar = ({
   direction,
   isProgressComplete,
   onProgressUpdate,
+  data,
 }: UseProgressBarProps) => {
   const [progress, setProgress] = useState(0);
   const [pathLength, setPathLength] = useState(0);
@@ -55,7 +56,7 @@ export const useProgressBar = ({
       updateProgress(newProgress);
 
       scrollTimeoutRef.current = setTimeout(() => {
-        const closestDot = findClosestDot(progressRef.current);
+        const closestDot = findClosestDot(progressRef.current, data || []);
         updateProgress(closestDot);
 
         if (!hasCompletedRef.current) {
@@ -69,7 +70,7 @@ export const useProgressBar = ({
         }
       }, SCROLL_SETTINGS.TIMEOUT);
     },
-    [direction, isProgressComplete, updateProgress, onProgressComplete, onProgressStart]
+    [direction, isProgressComplete, updateProgress, onProgressComplete, onProgressStart, data]
   );
 
   // Initialize SVG path and dots
@@ -79,13 +80,14 @@ export const useProgressBar = ({
     const length = pathRef.current.getTotalLength();
     setPathLength(length);
 
-    const points = DOT_POSITIONS.map((percent) => {
-      const point = pathRef.current!.getPointAtLength((length * percent) / 100);
-      return { x: point.x, y: point.y, percentage: percent };
+    const positions = getDotPositions(data || []);
+    const points = positions.map((percentage) => {
+      const point = pathRef.current!.getPointAtLength((length * percentage) / 100);
+      return { x: point.x, y: point.y, percentage };
     });
 
     setDotPoints(points);
-  }, []);
+  }, [data]);
 
   // Handle initial progress state
   useEffect(() => {

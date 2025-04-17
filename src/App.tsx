@@ -5,10 +5,12 @@ import Page3 from './page/Page3';
 import './App.css';
 import Header from './components/common/Header';
 import Loader from './components/common/Loading';
+import { data } from './data';
 
 const App: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [currentPage, setCurrentPage] = useState(0);
+  const [currentBatch, setCurrentBatch] = useState(0);
   const [scrollDirection, setScrollDirection] = useState<'forward' | 'backward'>('forward');
   const [isProgressComplete, setIsProgressComplete] = useState(false);
   const [progressValue, setProgressValue] = useState(0);
@@ -17,6 +19,7 @@ const App: React.FC = () => {
   const touchStartX = useRef(0);
   const touchStartY = useRef(0);
   const previousPage = useRef(0);
+  const previousBatch = useRef(0);
 
   useEffect(() => {
     const handleResize = () => {
@@ -28,10 +31,11 @@ const App: React.FC = () => {
   }, []);
 
   const handleNavigate = useCallback(
-    (targetPage: number) => {
+    (targetPage: number, targetBatch: number = 0) => {
       if (!containerRef.current || isScrollingRef.current) return;
 
       previousPage.current = currentPage;
+      previousBatch.current = currentBatch;
       isScrollingRef.current = true;
       const pageWidth = window.innerWidth;
       containerRef.current.scrollTo({
@@ -40,24 +44,20 @@ const App: React.FC = () => {
       });
 
       setCurrentPage(targetPage);
+      setCurrentBatch(targetBatch);
       setScrollDirection(targetPage > currentPage ? 'forward' : 'backward');
 
-      // Set initial progress value when navigating to page 2
+      // Reset progress when navigating to a new page
       if (targetPage === 1) {
-        if (previousPage.current === 2) {
-          setProgressValue(100);
-          setIsProgressComplete(true);
-        } else if (previousPage.current === 0) {
-          setProgressValue(0);
-          setIsProgressComplete(false);
-        }
+        setProgressValue(0);
+        setIsProgressComplete(false);
       }
 
       setTimeout(() => {
         isScrollingRef.current = false;
       }, 500);
     },
-    [currentPage]
+    [currentPage, currentBatch]
   );
 
   const handleTouchStart = (e: React.TouchEvent) => {
@@ -67,13 +67,13 @@ const App: React.FC = () => {
 
   const handleTouchMove = (e: React.TouchEvent) => {
     if (!isMobile) return;
-    
+
     const touchX = e.touches[0].clientX;
     const touchY = e.touches[0].clientY;
-    
+
     const deltaX = touchStartX.current - touchX;
     const deltaY = touchStartY.current - touchY;
-    
+
     if (Math.abs(deltaX) > Math.abs(deltaY)) {
       e.preventDefault();
     }
@@ -100,10 +100,13 @@ const App: React.FC = () => {
       if (isScrollingRef.current || isMobile) return;
 
       if (currentPage === 1) {
-        if (e.deltaY < 0 && progressValue === 0) {
-          handleNavigate(0);
-        } else if (e.deltaY > 0 && progressValue === 100) {
-          handleNavigate(2);
+        if (e.deltaY < 0) {
+          // Scrolling up
+          if (currentBatch === 0 && progressValue === 0) {
+            handleNavigate(0);
+          } else if (currentBatch > 0 && progressValue === 0) {
+            handleNavigate(1, currentBatch - 1);
+          }
         }
         return;
       }
@@ -113,7 +116,7 @@ const App: React.FC = () => {
         handleNavigate(targetPage);
       }
     },
-    [currentPage, progressValue, handleNavigate, isMobile]
+    [currentPage, currentBatch, progressValue, handleNavigate, isMobile]
   );
 
   const handleScroll = useCallback(() => {
@@ -127,27 +130,30 @@ const App: React.FC = () => {
       const newDirection = newPage > currentPage ? 'forward' : 'backward';
       setScrollDirection(newDirection);
       setCurrentPage(newPage);
-
-      // Handle progress value when entering page 2
-      if (newPage === 1) {
-        if (currentPage === 2) {
-          setProgressValue(100);
-          setIsProgressComplete(true);
-        } else if (currentPage === 0) {
-          setProgressValue(0);
-          setIsProgressComplete(false);
-        }
-      }
+      setCurrentBatch(0);
+      setProgressValue(0);
+      setIsProgressComplete(false);
     }
   }, [currentPage]);
 
   const handleProgressUpdate = useCallback((value: number) => {
     setProgressValue(value);
+    if (value === 100) {
+      setIsProgressComplete(true);
+    }
   }, []);
 
   const handleForwardComplete = useCallback(() => {
     setIsProgressComplete(true);
-  }, []);
+    // When progress reaches 100%, move to next batch or page
+    if (currentBatch < data.length - 1) {
+      // Move to next batch
+      handleNavigate(1, currentBatch + 1);
+    } else {
+      // Move to Page 3
+      handleNavigate(2);
+    }
+  }, [currentBatch, handleNavigate]);
 
   const handleBackwardComplete = useCallback(() => {
     setIsProgressComplete(true);
@@ -176,6 +182,8 @@ const App: React.FC = () => {
             scrollDirection={scrollDirection}
             isProgressComplete={isProgressComplete}
             onProgressUpdate={handleProgressUpdate}
+            currentBatch={currentBatch}
+            data={data[currentBatch] || []}
           />
         </div>
         <div className="pageStyle">

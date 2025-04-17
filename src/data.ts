@@ -1,5 +1,5 @@
 export const data = [
-  {
+  [{
     name: "Adeel Solangi",
     language: "Sindhi",
     id: "V59OF92YF627HFY0",
@@ -68,8 +68,8 @@ export const data = [
     id: "5ZVOEPMJUI4MB4EN",
     bio: "Donec lobortis eleifend condimentum. Morbi ac tellus erat.",
     version: 2.53,
-  },
-  {
+  },],
+ [ {
     name: "Adil Eli",
     language: "Uyghur",
     id: "6VTI8X6LL0MMPJCC",
@@ -138,5 +138,5 @@ export const data = [
     id: "5ZVOEPMJUI4MB4EN",
     bio: "Donec lobortis eleifend condimentum. Morbi ac tellus erat.",
     version: 2.53,
-  },
+  },]
 ];

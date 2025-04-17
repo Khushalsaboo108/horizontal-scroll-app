@@ -1,7 +1,8 @@
-import { DOT_POSITIONS, SCROLL_SETTINGS } from './constants';
+import { getDotPositions, SCROLL_SETTINGS } from './constants';
 
-export const findClosestDot = (currentProgress: number): number => {
-  return DOT_POSITIONS.reduce((closest, current) => {
+export const findClosestDot = (currentProgress: number, data: any[]): number => {
+  const positions = getDotPositions(data);
+  return positions.reduce((closest, current) => {
     const currentDistance = Math.abs(currentProgress - current);
     const closestDistance = Math.abs(currentProgress - closest);
     return currentDistance < closestDistance ? current : closest;

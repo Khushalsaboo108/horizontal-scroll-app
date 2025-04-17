@@ -8,6 +8,8 @@ const ProgressDot: React.FC<ProgressDotProps> = ({
   point,
   progress,
   index,
+  isActive,
+  data,
 }) => {
   const isBelowLine = point.y > 73;
   const labelY = isBelowLine ? point.y + 40 : point.y - 40;
@@ -15,7 +17,7 @@ const ProgressDot: React.FC<ProgressDotProps> = ({
   const [shouldRender, setShouldRender] = useState(false);
 
   useEffect(() => {
-    if (progress >= point.percentage) {
+    if (isActive) {
       setShouldRender(true);
       setIsRemoving(false);
     } else {
@@ -26,7 +28,7 @@ const ProgressDot: React.FC<ProgressDotProps> = ({
       }, 300); // Match animation duration
       return () => clearTimeout(timer);
     }
-  }, [progress, point.percentage]);
+  }, [isActive]);
 
   const labelClass = `progress-label ${
     isBelowLine ? 'label-bottom label-bottom-hover' : 'label-top label-top-hover'
@@ -38,10 +40,10 @@ const ProgressDot: React.FC<ProgressDotProps> = ({
         cx={point.x}
         cy={point.y}
         r="6"
-        fill={progress >= point.percentage ? 'black' : 'transparent'}
+        fill={isActive ? 'black' : 'transparent'}
         className="progress-dot"
       />
-      {shouldRender && (
+      {shouldRender && data && (
         <foreignObject
           x={point.x - 30}
           y={labelY - 30}
@@ -50,7 +52,9 @@ const ProgressDot: React.FC<ProgressDotProps> = ({
           overflow="visible"
           className='foreign-style'
         >
-          <div className={labelClass}>{index + 1}</div>
+          <div className={labelClass}>
+            <span>{data.name}</span>
+          </div>
         </foreignObject>
       )}
     </g>

@@ -1,3 +1,7 @@
+body{
+  color: black;
+}
+
 .containerStyle {
   display: flex;
   overflow: hidden;

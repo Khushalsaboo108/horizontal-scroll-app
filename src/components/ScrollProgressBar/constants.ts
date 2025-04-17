@@ -1,8 +1,12 @@
 import { data } from "../../data";
 
-export const DOT_POSITIONS = data.map((_, index) => {
-  return Math.round((index / (data.length - 1)) * 100);
-});
+// Get the number of items in the current batch
+export const getDotPositions = (batchData: any[]) => {
+  const itemsCount = batchData?.length || 0;
+  return Array.from({ length: itemsCount }, (_, index) => {
+    return Math.round((index / (itemsCount - 1)) * 100);
+  });
+};
 
 export const SCROLL_SETTINGS = {
   STEP: 2.5,

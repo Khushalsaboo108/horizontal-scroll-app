@@ -3,12 +3,27 @@ import ProgressPath from './components/ProgressPath';
 import ProgressDot from './components/ProgressDot';
 import { ScrollProgressBarProps } from './types';
 import { useProgressBar } from './hooks/useProgressBar';
-import { SVG_SETTINGS } from './constants';
+import { SVG_SETTINGS, getDotPositions } from './constants';
 import './ScrollProgressBar.css';
 
 const ScrollProgressBar: React.FC<ScrollProgressBarProps> = (props) => {
-  const { progress, pathRef, pathLength, dotPoints, handleWheel } =
-    useProgressBar(props);
+  const { progress, pathRef, pathLength, handleWheel } = useProgressBar(props);
+  const [dotPoints, setDotPoints] = React.useState<Array<{ x: number; y: number; percentage: number }>>([]);
+
+  // Update dot positions when data changes
+  useEffect(() => {
+    if (!pathRef.current) return;
+
+    const length = pathRef.current.getTotalLength();
+    const positions = getDotPositions(props.data || []);
+    
+    const points = positions.map((percentage) => {
+      const point = pathRef.current!.getPointAtLength((length * percentage) / 100);
+      return { x: point.x, y: point.y, percentage };
+    });
+
+    setDotPoints(points);
+  }, [props.data, pathRef]);
 
   useEffect(() => {
     const wheelHandler = (e: WheelEvent) => {
@@ -43,6 +58,8 @@ const ScrollProgressBar: React.FC<ScrollProgressBarProps> = (props) => {
             point={point}
             progress={progress}
             index={index}
+            isActive={progress >= point.percentage}
+            data={props.data?.[index]}
           />
         ))}
       </svg>
