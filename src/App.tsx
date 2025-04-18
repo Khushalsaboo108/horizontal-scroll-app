@@ -1,4 +1,4 @@
-import React, { useRef, useState, useCallback, useEffect } from 'react';
+import React, { useRef, useState, useCallback } from 'react';
 import Page1 from './page/Page1';
 import Page2 from './page/Page2';
 import Page3 from './page/Page3';
@@ -6,6 +6,9 @@ import './App.css';
 import Header from './components/common/Header';
 import Loader from './components/common/Loading';
 import { data } from './data';
+
+const ITEMS_PER_PAGE = 10;
+const ITEMS_PER_SCROLL = 3;
 
 const App: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -15,27 +18,11 @@ const App: React.FC = () => {
   const [isProgressComplete, setIsProgressComplete] = useState(false);
   const [progressValue, setProgressValue] = useState(0);
   const isScrollingRef = useRef(false);
-  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
-  const touchStartX = useRef(0);
-  const touchStartY = useRef(0);
-  const previousPage = useRef(0);
-  const previousBatch = useRef(0);
-
-  useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth <= 768);
-    };
-
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
 
   const handleNavigate = useCallback(
     (targetPage: number, targetBatch: number = 0) => {
       if (!containerRef.current || isScrollingRef.current) return;
 
-      previousPage.current = currentPage;
-      previousBatch.current = currentBatch;
       isScrollingRef.current = true;
       const pageWidth = window.innerWidth;
       containerRef.current.scrollTo({
@@ -47,7 +34,6 @@ const App: React.FC = () => {
       setCurrentBatch(targetBatch);
       setScrollDirection(targetPage > currentPage ? 'forward' : 'backward');
 
-      // Reset progress when navigating to a new page
       if (targetPage === 1) {
         setProgressValue(0);
         setIsProgressComplete(false);
@@ -57,55 +43,28 @@ const App: React.FC = () => {
         isScrollingRef.current = false;
       }, 500);
     },
-    [currentPage, currentBatch]
+    [currentPage]
   );
-
-  const handleTouchStart = (e: React.TouchEvent) => {
-    touchStartX.current = e.touches[0].clientX;
-    touchStartY.current = e.touches[0].clientY;
-  };
-
-  const handleTouchMove = (e: React.TouchEvent) => {
-    if (!isMobile) return;
-
-    const touchX = e.touches[0].clientX;
-    const touchY = e.touches[0].clientY;
-
-    const deltaX = touchStartX.current - touchX;
-    const deltaY = touchStartY.current - touchY;
-
-    if (Math.abs(deltaX) > Math.abs(deltaY)) {
-      e.preventDefault();
-    }
-  };
-
-  const handleTouchEnd = (e: React.TouchEvent) => {
-    if (!isMobile) return;
-
-    const touchEndX = e.changedTouches[0].clientX;
-    const swipeDistance = touchStartX.current - touchEndX;
-    const minSwipeDistance = 50;
-
-    if (Math.abs(swipeDistance) > minSwipeDistance) {
-      if (swipeDistance > 0 && currentPage < 2) {
-        handleNavigate(currentPage + 1);
-      } else if (swipeDistance < 0 && currentPage > 0) {
-        handleNavigate(currentPage - 1);
-      }
-    }
-  };
 
   const handleWheel = useCallback(
     (e: React.WheelEvent) => {
-      if (isScrollingRef.current || isMobile) return;
+      if (isScrollingRef.current) return;
 
       if (currentPage === 1) {
         if (e.deltaY < 0) {
           // Scrolling up
-          if (currentBatch === 0 && progressValue === 0) {
+          if (currentBatch === 0) {
             handleNavigate(0);
-          } else if (currentBatch > 0 && progressValue === 0) {
+          } else {
             handleNavigate(1, currentBatch - 1);
+          }
+        } else {
+          // Scrolling down
+          const maxBatch = Math.ceil(data.length / ITEMS_PER_SCROLL) - 1;
+          if (currentBatch >= maxBatch) {
+            handleNavigate(2);
+          } else {
+            handleNavigate(1, currentBatch + 1);
           }
         }
         return;
@@ -116,25 +75,8 @@ const App: React.FC = () => {
         handleNavigate(targetPage);
       }
     },
-    [currentPage, currentBatch, progressValue, handleNavigate, isMobile]
+    [currentPage, currentBatch, handleNavigate]
   );
-
-  const handleScroll = useCallback(() => {
-    if (!containerRef.current) return;
-
-    const currentScroll = containerRef.current.scrollLeft;
-    const pageWidth = window.innerWidth;
-    const newPage = Math.round(currentScroll / pageWidth);
-
-    if (newPage !== currentPage) {
-      const newDirection = newPage > currentPage ? 'forward' : 'backward';
-      setScrollDirection(newDirection);
-      setCurrentPage(newPage);
-      setCurrentBatch(0);
-      setProgressValue(0);
-      setIsProgressComplete(false);
-    }
-  }, [currentPage]);
 
   const handleProgressUpdate = useCallback((value: number) => {
     setProgressValue(value);
@@ -144,20 +86,21 @@ const App: React.FC = () => {
   }, []);
 
   const handleForwardComplete = useCallback(() => {
-    setIsProgressComplete(true);
-    // When progress reaches 100%, move to next batch or page
-    if (currentBatch < data.length - 1) {
-      // Move to next batch
-      handleNavigate(1, currentBatch + 1);
-    } else {
-      // Move to Page 3
+    const maxBatch = Math.ceil(data.length / ITEMS_PER_SCROLL) - 1;
+    if (currentBatch >= maxBatch) {
       handleNavigate(2);
+    } else {
+      handleNavigate(1, currentBatch + 1);
     }
   }, [currentBatch, handleNavigate]);
 
   const handleBackwardComplete = useCallback(() => {
-    setIsProgressComplete(true);
-  }, []);
+    if (currentBatch === 0) {
+      handleNavigate(0);
+    } else {
+      handleNavigate(1, currentBatch - 1);
+    }
+  }, [currentBatch, handleNavigate]);
 
   return (
     <>
@@ -166,10 +109,6 @@ const App: React.FC = () => {
       <div
         ref={containerRef}
         onWheel={handleWheel}
-        onScroll={handleScroll}
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
         className="containerStyle"
       >
         <div className="pageStyle">
@@ -183,7 +122,7 @@ const App: React.FC = () => {
             isProgressComplete={isProgressComplete}
             onProgressUpdate={handleProgressUpdate}
             currentBatch={currentBatch}
-            data={data[currentBatch] || []}
+            data={data}
           />
         </div>
         <div className="pageStyle">

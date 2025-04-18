@@ -1,23 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
+import anime from 'animejs/lib/anime.es.js';
 import { colors } from '../../styles/theme';
+import { ScrollProgressBarProps } from './types';
 import './ScrollProgressBar.css';
 
-interface Person {
-  name: string;
-  language: string;
-  id: string;
-  bio: string;
-  version: number;
-}
-
-interface ScrollProgressBarProps {
-  onProgressComplete: () => void;
-  onProgressStart: () => void;
-  direction: 'forward' | 'backward';
-  isProgressComplete: boolean;
-  onProgressUpdate: (value: number) => void;
-  data: Person[];
-}
+const ITEMS_PER_PAGE = 10;
+const ITEMS_PER_SCROLL = 3;
 
 const ScrollProgressBar: React.FC<ScrollProgressBarProps> = ({
   onProgressComplete,
@@ -25,77 +13,88 @@ const ScrollProgressBar: React.FC<ScrollProgressBarProps> = ({
   direction,
   isProgressComplete,
   onProgressUpdate,
-  data,
+  data = [],
+  currentBatch,
 }) => {
   const [progress, setProgress] = useState(0);
-  const [isScrolling, setIsScrolling] = useState(false);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const progressBarRef = useRef<HTMLDivElement>(null);
+  const dotsRef = useRef<HTMLDivElement[]>([]);
+
+  const handleIndex = (batch: number) => {
+    const totalBatches = Math.ceil(data.length / ITEMS_PER_SCROLL);
+    const newIndex = Math.min(batch, totalBatches - 1);
+    setCurrentIndex(newIndex);
+    return newIndex;
+  };
+
+  // Calculate progress based on current batch
+  const calculateProgress = (batch: number) => {
+    const totalBatches = Math.ceil(data.length / ITEMS_PER_SCROLL);
+    const index = handleIndex(batch);
+    return (index / totalBatches) * 100;
+  };
 
   useEffect(() => {
-    if (direction === 'backward') {
-      setProgress(100);
-    } else {
-      setProgress(0);
-    }
-  }, [direction]);
+    const targetProgress = calculateProgress(currentBatch);
+    animateProgress(targetProgress);
+  }, [currentBatch]);
 
-  useEffect(() => {
-    const handleWheel = (e: WheelEvent) => {
-      if (isScrolling) return;
-
-      if (direction === 'forward' && e.deltaY > 0) {
-        setIsScrolling(true);
-        const newProgress = Math.min(progress + 10, 100);
-        setProgress(newProgress);
-        onProgressUpdate(newProgress);
-
-        if (newProgress === 100) {
+  const animateProgress = (targetProgress: number) => {
+    // Animate progress bar
+    anime({
+      targets: progressBarRef.current,
+      width: `${targetProgress}%`,
+      duration: 500,
+      easing: 'easeOutQuad',
+      update: (anim) => {
+        const currentProgress = Math.round(anim.progress * targetProgress / 100);
+        setProgress(currentProgress);
+        onProgressUpdate(currentProgress);
+      },
+      complete: () => {
+        if (targetProgress >= 100) {
           onProgressComplete();
-        }
-
-        setTimeout(() => setIsScrolling(false), 100);
-      } else if (direction === 'backward' && e.deltaY < 0) {
-        setIsScrolling(true);
-        const newProgress = Math.max(progress - 10, 0);
-        setProgress(newProgress);
-        onProgressUpdate(newProgress);
-
-        if (newProgress === 0) {
+        } else if (targetProgress <= 0) {
           onProgressStart();
         }
-
-        setTimeout(() => setIsScrolling(false), 100);
       }
-    };
+    });
 
-    window.addEventListener('wheel', handleWheel);
-    return () => window.removeEventListener('wheel', handleWheel);
-  }, [progress, direction, isScrolling, onProgressComplete, onProgressStart, onProgressUpdate]);
-
-  // Reset progress when direction changes
-  useEffect(() => {
-    if (direction === 'forward') {
-      setProgress(0);
-    } else {
-      setProgress(100);
-    }
-  }, [direction]);
+    // Animate dots
+    const totalDots = Math.ceil(data.length / ITEMS_PER_SCROLL);
+    dotsRef.current.forEach((dot, index) => {
+      const shouldFill = index <= Math.floor((targetProgress / 100) * totalDots);
+      anime({
+        targets: dot,
+        backgroundColor: shouldFill ? colors.primary : colors.background,
+        scale: shouldFill ? [0.8, 1] : [1, 0.8],
+        duration: 300,
+        delay: index * 50,
+        easing: 'easeOutElastic(1, .8)'
+      });
+    });
+  };
 
   return (
     <div className="progress-bar-container">
       <div
+        ref={progressBarRef}
         className="progress-bar"
         style={{
-          width: `${progress}%`,
-          backgroundColor: colors.progressBar,
+          backgroundColor: colors.primary,
         }}
       />
       <div className="progress-dots">
-        {data.map((_, index) => (
+        {Array.from({ length: Math.ceil(data.length / ITEMS_PER_SCROLL) }).map((_, index) => (
           <div
             key={index}
+            ref={el => dotsRef.current[index] = el!}
             className="progress-dot"
             style={{
-              backgroundColor: index * 20 <= progress ? colors.progressBar : colors.progressDot,
+              backgroundColor: index <= Math.floor((progress / 100) * Math.ceil(data.length / ITEMS_PER_SCROLL))
+                ? colors.primary 
+                : colors.background,
             }}
           />
         ))}

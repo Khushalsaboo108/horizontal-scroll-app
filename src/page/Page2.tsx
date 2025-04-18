@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import PageContainer from '../components/PageContainer/PageContainer';
 import { colors } from '../styles/theme';
 import { contentStyle } from '../styles/common';
@@ -23,6 +23,9 @@ interface Page2Props {
   data: Person[];
 }
 
+const ITEMS_PER_PAGE = 10;
+const ITEMS_PER_SCROLL = 3;
+
 const Page2: React.FC<Page2Props> = ({
   onForwardComplete,
   onBackwardComplete,
@@ -32,35 +35,64 @@ const Page2: React.FC<Page2Props> = ({
   currentBatch,
   data,
 }) => {
-  const isMobile = window.innerWidth <= 768;
+  const totalBatches = Math.ceil(data.length / ITEMS_PER_SCROLL);
+  const currentPage = Math.floor(currentBatch / (ITEMS_PER_PAGE / ITEMS_PER_SCROLL)) + 1;
+  const totalPages = Math.ceil(totalBatches / (ITEMS_PER_PAGE / ITEMS_PER_SCROLL));
+
+  const [countScrollProgressBar,setCountScrollProgressBar] = useState(1);
+  const Limit = 10;
+  const [currentIndex,setCurrentIndex] = useState(0);
+
+  const dataLimit = (length:number) =>{
+    setCountScrollProgressBar(Math.ceil(length/Limit));
+  }
+
+  const handleIndex = (index:number) =>{
+    setCurrentIndex(index);
+  }
+
+  const xyz = () =>{
+    if(currentIndex === data.length-1){
+      return onForwardComplete;
+  }
+  else{
+    return null
+  }
+}
+
+  useEffect(()=>{
+    dataLimit(data.length);
+  },[])
 
   return (
     <PageContainer backgroundColor={colors.page.page2}>
       <div className="container">
         <div style={contentStyle}>
-          <h1 className="heading">Page 2 - Batch {currentBatch + 1}</h1>
+          <h1 className="heading">Page 2 - Batch {currentPage} of {totalPages}</h1>
           
           <p className="text">
-            {isMobile
-              ? 'Swipe to navigate between pages'
-              : scrollDirection === 'backward'
-                ? 'Scroll up to go back to the previous batch'
-                : isProgressComplete
-                  ? 'Scroll to navigate to the next batch'
-                  : 'Complete all steps to continue'
+            {scrollDirection === 'backward'
+              ? 'Scroll up to go back to the previous batch'
+              : isProgressComplete
+                ? 'Scroll to navigate to the next batch'
+                : 'Complete all steps to continue'
             }
           </p>
         </div>
-        {!isMobile && (
+        {Array.from({length:countScrollProgressBar}).map((_,index)=>(
           <ScrollProgressBar
-            onProgressComplete={onForwardComplete}
-            onProgressStart={onBackwardComplete}
-            direction={scrollDirection}
-            isProgressComplete={isProgressComplete}
-            onProgressUpdate={onProgressUpdate}
-            data={data}
-          />
-        )}
+          begin={index*Limit}
+          onProgressComplete={xyz}
+          onProgressStart={onBackwardComplete}
+          direction={scrollDirection}
+          isProgressComplete={isProgressComplete}
+          onProgressUpdate={onProgressUpdate}
+          data={data.slice(index*Limit,index*Limit+Limit)}
+          currentBatch={currentBatch}
+          handleIndex={handleIndex}
+          shouldDisplay={index === (Math.floor(currentIndex/Limit)) }
+          key={index}
+        />))}
       </div>
     </PageContainer>
   );

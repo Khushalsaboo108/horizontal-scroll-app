@@ -1,10 +1,14 @@
 export interface ScrollProgressBarProps {
+  begin?:number
   onProgressComplete: () => void;
   onProgressStart: () => void;
   direction: 'forward' | 'backward';
   isProgressComplete: boolean;
   onProgressUpdate: (value: number) => void;
   data?: any[];
+  currentBatch: number;
+  shouldDisplay?: boolean;
+  handleIndex?: (index:number) => void;
 }
 
 export interface UseProgressBarProps extends Omit<ScrollProgressBarProps, 'onProgressUpdate'> {

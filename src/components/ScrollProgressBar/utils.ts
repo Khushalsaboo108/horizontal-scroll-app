@@ -1,4 +1,5 @@
 import { getDotPositions, SCROLL_SETTINGS } from './constants';
+import { colors } from '../../styles/theme';
 
 export const findClosestDot = (currentProgress: number, data: any[]): number => {
   const positions = getDotPositions(data);
@@ -30,4 +31,12 @@ export const calculateNewProgress = (
 
   const newProgress = currentProgress + progressStep;
   return Math.min(100, Math.max(0, newProgress));
+};
+
+export const calculateProgress = (currentItem: number, totalItems: number): number => {
+  return (currentItem / totalItems) * 100;
+};
+
+export const getDotColor = (isActive: boolean, direction: 'forward' | 'backward'): string => {
+  return isActive ? colors.primary : colors.background;
 };
