@@ -14,7 +14,6 @@ const ScrollProgressBar: React.FC<ScrollProgressBarProps> = (props) => {
   useEffect(() => {
     if (!pathRef.current) return;
 
-
     const length = pathRef.current.getTotalLength();
     const positions = getDotPositions(props.data || []);
     
@@ -24,17 +23,8 @@ const ScrollProgressBar: React.FC<ScrollProgressBarProps> = (props) => {
     });
 
     setDotPoints(points);
-    console.log(props,"props");
   }, [props.data, pathRef]);
 
-  useEffect(() => {
-    if(dotPoints.length>0){
-      let temp = dotPoints.filter((point) => point.percentage <= progress);
-      if(props.handleIndex && props.begin !==undefined){
-        props.handleIndex(props.begin+temp.length-1);
-      }
-    }
-  },[progress]);
   useEffect(() => {
     const wheelHandler = (e: WheelEvent) => {
       handleWheel(e);
@@ -45,12 +35,6 @@ const ScrollProgressBar: React.FC<ScrollProgressBarProps> = (props) => {
       window.removeEventListener('wheel', wheelHandler);
     };
   }, [props.direction, props.isProgressComplete, handleWheel]);
-  ///hlo kkk
-
-  // if(!props.shouldDisplay){
-  //   return null
-
-  // }
 
   return (
     <div className="progress-bar-container">

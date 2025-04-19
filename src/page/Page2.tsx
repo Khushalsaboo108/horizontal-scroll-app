@@ -39,30 +39,9 @@ const Page2: React.FC<Page2Props> = ({
   const currentPage = Math.floor(currentBatch / (ITEMS_PER_PAGE / ITEMS_PER_SCROLL)) + 1;
   const totalPages = Math.ceil(totalBatches / (ITEMS_PER_PAGE / ITEMS_PER_SCROLL));
 
-  const [countScrollProgressBar,setCountScrollProgressBar] = useState(1);
-  const Limit = 10;
-  const [currentIndex,setCurrentIndex] = useState(0);
 
-  const dataLimit = (length:number) =>{
-    setCountScrollProgressBar(Math.ceil(length/Limit));
-  }
 
-  const handleIndex = (index:number) =>{
-    setCurrentIndex(index);
-  }
-
-  const xyz = () =>{
-    if(currentIndex === data.length-1){
-      return onForwardComplete;
-  }
-  else{
-    return null
-  }
-}
-
-  useEffect(()=>{
-    dataLimit(data.length);
-  },[])
+  useEffect(()=>console.log())
 
   return (
     <PageContainer backgroundColor={colors.page.page2}>
@@ -79,20 +58,15 @@ const Page2: React.FC<Page2Props> = ({
             }
           </p>
         </div>
-        {Array.from({length:countScrollProgressBar}).map((_,index)=>(
           <ScrollProgressBar
-          begin={index*Limit}
-          onProgressComplete={xyz}
+          onProgressComplete={onForwardComplete}
           onProgressStart={onBackwardComplete}
           direction={scrollDirection}
           isProgressComplete={isProgressComplete}
           onProgressUpdate={onProgressUpdate}
-          data={data.slice(index*Limit,index*Limit+Limit)}
+          data={data}
           currentBatch={currentBatch}
-          handleIndex={handleIndex}
-          shouldDisplay={index === (Math.floor(currentIndex/Limit)) }
-          key={index}
-        />))}
+          />
       </div>
     </PageContainer>
   );

@@ -56,14 +56,17 @@ export const useProgressBar = ({
       updateProgress(newProgress);
 
       scrollTimeoutRef.current = setTimeout(() => {
-        const closestDot = findClosestDot(progressRef.current, data || []);
-        updateProgress(closestDot);
+        // Only snap to closest dot if we're not at 100% or 0%
+        if (newProgress > 0 && newProgress < 100) {
+          const closestDot = findClosestDot(progressRef.current, data || []);
+          updateProgress(closestDot);
+        }
 
         if (!hasCompletedRef.current) {
-          if (!isScrollingBack && closestDot >= 100) {
+          if (!isScrollingBack && progressRef.current === 100) {
             hasCompletedRef.current = true;
             onProgressComplete();
-          } else if (isScrollingBack && closestDot <= 0) {
+          } else if (isScrollingBack && progressRef.current === 0) {
             hasCompletedRef.current = true;
             onProgressStart();
           }

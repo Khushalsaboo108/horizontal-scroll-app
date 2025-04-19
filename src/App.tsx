@@ -8,7 +8,7 @@ import Loader from './components/common/Loading';
 import { data } from './data';
 
 const ITEMS_PER_PAGE = 10;
-const ITEMS_PER_SCROLL = 3;
+const ITEMS_PER_SCROLL = 5;
 
 const App: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -18,6 +18,8 @@ const App: React.FC = () => {
   const [isProgressComplete, setIsProgressComplete] = useState(false);
   const [progressValue, setProgressValue] = useState(0);
   const isScrollingRef = useRef(false);
+  const totalBatches = Math.ceil(data.length / ITEMS_PER_SCROLL);
+  const totalPages = totalBatches + 2; // +2 for Page1 and Page3
 
   const handleNavigate = useCallback(
     (targetPage: number, targetBatch: number = 0) => {
@@ -60,8 +62,7 @@ const App: React.FC = () => {
           }
         } else {
           // Scrolling down
-          const maxBatch = Math.ceil(data.length / ITEMS_PER_SCROLL) - 1;
-          if (currentBatch >= maxBatch) {
+          if (currentBatch >= totalBatches - 1) {
             handleNavigate(2);
           } else {
             handleNavigate(1, currentBatch + 1);
@@ -71,28 +72,27 @@ const App: React.FC = () => {
       }
 
       const targetPage = currentPage + (e.deltaY > 0 ? 1 : -1);
-      if (targetPage >= 0 && targetPage <= 2) {
+      if (targetPage >= 0 && targetPage < totalPages) {
         handleNavigate(targetPage);
       }
     },
-    [currentPage, currentBatch, handleNavigate]
+    [currentPage, currentBatch, handleNavigate, totalBatches, totalPages]
   );
 
   const handleProgressUpdate = useCallback((value: number) => {
     setProgressValue(value);
-    if (value === 100) {
+    if (value === 1) {
       setIsProgressComplete(true);
     }
   }, []);
 
   const handleForwardComplete = useCallback(() => {
-    const maxBatch = Math.ceil(data.length / ITEMS_PER_SCROLL) - 1;
-    if (currentBatch >= maxBatch) {
+    if (currentBatch >= totalBatches - 1) {
       handleNavigate(2);
     } else {
       handleNavigate(1, currentBatch + 1);
     }
-  }, [currentBatch, handleNavigate]);
+  }, [currentBatch, handleNavigate, totalBatches]);
 
   const handleBackwardComplete = useCallback(() => {
     if (currentBatch === 0) {
@@ -114,17 +114,20 @@ const App: React.FC = () => {
         <div className="pageStyle">
           <Page1 />
         </div>
-        <div className="pageStyle">
-          <Page2
-            onForwardComplete={handleForwardComplete}
-            onBackwardComplete={handleBackwardComplete}
-            scrollDirection={scrollDirection}
-            isProgressComplete={isProgressComplete}
-            onProgressUpdate={handleProgressUpdate}
-            currentBatch={currentBatch}
-            data={data}
-          />
-        </div>
+        {Array.from({length: totalBatches}).map((_, index) => (
+         <div className="pageStyle" key={index}>
+         <Page2
+           onForwardComplete={handleForwardComplete}
+           onBackwardComplete={handleBackwardComplete}
+           scrollDirection={scrollDirection}
+           isProgressComplete={isProgressComplete}
+           onProgressUpdate={handleProgressUpdate}
+           currentBatch={currentBatch}
+           data={data.slice(index * ITEMS_PER_SCROLL, (index + 1) * ITEMS_PER_SCROLL)}
+         />
+       </div> 
+        ))}
+          
         <div className="pageStyle">
           <Page3 />
         </div>

@@ -28,14 +28,14 @@ export const data = [
     version: 2.53,
   },
   {
-    name: "Adil Eli",
+    name: "Adil 4Eli",
     language: "Uyghur",
     id: "6VTI8X6LL0MMPJCC",
     bio: "Vivamus id faucibus velit, id posuere leo. Morbi vitae nisi lacinia, laoreet lorem nec, egestas orci. Suspendisse potenti.",
     version: 6.49,
   },
   {
-    name: "Adile Qadir",
+    name: "Adile Qadir test",
     language: "Uyghur",
     id: "F2KEU5L7EHYSYFTT",
     bio: "Duis commodo orci ut dolor iaculis facilisis. Morbi ultricies consequat ligula posuere eleifend. Aenean finibus in tortor vel aliquet. Fusce eu ultrices elit, vel posuere neque.",

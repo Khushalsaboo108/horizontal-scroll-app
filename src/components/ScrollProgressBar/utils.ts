@@ -29,8 +29,18 @@ export const calculateNewProgress = (
       ? -step
       : step;
 
-  const newProgress = currentProgress + progressStep;
-  return Math.min(100, Math.max(0, newProgress));
+  let newProgress = currentProgress + progressStep;
+  
+  // Ensure we don't go beyond 0 or 100
+  newProgress = Math.min(100, Math.max(0, newProgress));
+  
+  // If we're at 100% and scrolling forward, or at 0% and scrolling backward,
+  // don't allow further progress changes
+  if ((newProgress >= 100 && !isScrollingUp) || (newProgress <= 0 && isScrollingUp)) {
+    return currentProgress;
+  }
+  
+  return newProgress;
 };
 
 export const calculateProgress = (currentItem: number, totalItems: number): number => {

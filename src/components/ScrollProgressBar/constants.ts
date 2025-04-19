@@ -3,8 +3,11 @@ import { data } from "../../data";
 // Get the number of items in the current batch
 export const getDotPositions = (batchData: any[]) => {
   const itemsCount = batchData?.length || 0;
+  const START_POSITION = 3; // Start from 3%
+  const END_POSITION = 97; // End at 97% to leave some space at the end
   return Array.from({ length: itemsCount }, (_, index) => {
-    return Math.round((index / (itemsCount - 1)) * 100);
+    const position = START_POSITION + ((index / (itemsCount - 1)) * (END_POSITION - START_POSITION));
+    return Math.round(position);
   });
 };
 
@@ -19,7 +22,7 @@ export const SVG_SETTINGS = {
   HEIGHT: '100%',
   OVERFLOW: 'visible',
   VIEW_BOX: '0 0 1389 146',
-  PATH: 'M0.5 96.5C40 -3 152 157.5 180 48.5C205.193 -49.573 257 133 328.5 96.5C400 60 390 182.5 525.5 125.5C661 68.5 545.5 -30.5001 669.5 21.9999C793.5 74.4999 920.5 130 831.5 144.5C742.5 159 863 -30.5001 940.5 21.9999C1018 74.4999 965 182.5 1061.5 125.5C1158 68.5 1125.5 -58.5 1187 33.5C1248.5 125.5 1350.5 1 1299.5 83C1258.7 148.6 1341.5 138.667 1388 125.5',
+  PATH: 'M1 32C122.822 9.02197 238.711 2.91797 353.5 5.23515C397.727 35.5983 535.342 66.3948 696.5 12.67C796 -20.5 891.465 24.0503 962.5 66.3948C1076 -44.5 1290.55 50.6138 1440 32',
 };
 
 export const ANIMATION_DURATION = 500; // ms
